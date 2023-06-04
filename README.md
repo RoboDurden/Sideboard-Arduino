@@ -1,3 +1,5 @@
+# This fork is to test the GD32-Arduino-Core and start debugging SimpleFOC :-)
+
 # Sideboard-Arduino
 
 ### Why yet another repository ?
