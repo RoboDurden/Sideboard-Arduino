@@ -1,6 +1,4 @@
-# This fork is to test the GD32-Arduino-Core and start debugging SimpleFOC :-)
-
-# Sideboard-Arduino
+# This Sideboard-Arduino fork is to test the GD32-Arduino-Core and start debugging SimpleFOC :-)
 
 ### Why yet another repository ?
 There are custom firmwares available for Hoverboards [sideboards](https://github.com/EFeru/hoverboard-firmware-hack-FOC/wiki/Sideboards).<br>
