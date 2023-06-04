@@ -70,6 +70,8 @@ CIO oLedGreen2 = CIO(LED2_PIN);
 
 CIO aoLed[5] = {oLedGreen, oLedGreen2, oLedRed, CIO(LED4_PIN), CIO(LED5_PIN) };
 
+CIO aoHall[3] = {CIO(PA1), CIO(PA9), CIO(PA10) };
+
 
 // ########################## SETUP ##########################
 void setup(){
@@ -82,6 +84,8 @@ void setup(){
   }
   delay(800);
   for (int i=0; i<5; i++) aoLed[i].Set(LOW);
+
+  for (int i=0; i<3; i++)  aoHall[i].Setup(INPUT);
 
   pinMode(SENSOR1_PIN, INPUT);
   pinMode(SENSOR2_PIN, INPUT);
@@ -159,9 +163,9 @@ void loop(){
 
   iAnalog1 = analogRead(SENSOR1_PIN);
   //delay(10);
-  iAnalog2 = analogRead(SENSOR2_PIN);
+  //iAnalog2 = analogRead(SENSOR2_PIN);
   digitalWrite(LED1_PIN, (timeNow % (iAnalog1*2)) < iAnalog1 );
-  digitalWrite(LED2_PIN, (timeNow % (iAnalog2*2)) < iAnalog2 );
+  //digitalWrite(LED2_PIN, (timeNow % (iAnalog2*2)) < iAnalog2 );
   
   //iAnalog1 = (9*iAnalog1 + analogRead(SENSOR1_PIN) ) / 10;
   //iAnalog2 = (9*iAnalog2 + analogRead(SENSOR2_PIN) ) / 10;
@@ -173,7 +177,15 @@ void loop(){
   iTimeSend = timeNow + TIME_SEND;
 
   //robo using HOVER_SERIAL instead of DEBUG_SERIAL=ST-Link
+  for (int i=0; i<3; i++)
+  {
+    boolean bOn = aoHall[i].Get(); 
+    Serial2.print(bOn); 
+    Serial2.print("  ");
+  }
+
   Serial2.print("A4: ");Serial2.print(iAnalog1);Serial2.print("\t C14: ");Serial2.println(iAnalog2);
+
 
   #ifdef IMU
     sensors_event_t accel;
