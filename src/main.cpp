@@ -7,13 +7,25 @@
 // HallSensor(int hallA, int hallB , int hallC , int pp)
 //  - hallA, hallB, hallC    - HallSensor A, B and C pins
 //  - pp                     - pole pairs
-HallSensor sensor = HallSensor(2, 3, 4, 11);
+HallSensor sensor = HallSensor(PA1, PC15, PA10, 15);
 
 // Interrupt routine initialization
 // channel A and B callbacks
-void doA(){sensor.handleA();}
-void doB(){sensor.handleB();}
-void doC(){sensor.handleC();}
+void doA()
+{
+  sensor.handleA();
+  Serial2.print("A");
+}
+void doB()
+{
+  sensor.handleB();
+  Serial2.print("B");
+}
+void doC()
+{
+  sensor.handleC();
+  Serial2.print("C");
+}
 
 
 #ifdef HOVER_SERIAL
@@ -70,7 +82,7 @@ CIO oLedGreen2 = CIO(LED2_PIN);
 
 CIO aoLed[5] = {oLedGreen, oLedGreen2, oLedRed, CIO(LED4_PIN), CIO(LED5_PIN) };
 
-CIO aoHall[3] = {CIO(PA1), CIO(PA9), CIO(PA10) };
+CIO aoHall[3] = {CIO(PA1), CIO(PC15), CIO(PA10) };
 
 
 // ########################## SETUP ##########################
@@ -86,6 +98,11 @@ void setup(){
   for (int i=0; i<5; i++) aoLed[i].Set(LOW);
 
   for (int i=0; i<3; i++)  aoHall[i].Setup(INPUT);
+
+  // initialize sensor hardware
+  sensor.init();
+  // hardware interrupt enable
+  sensor.enableInterrupts(doA, doB, doC);
 
   pinMode(SENSOR1_PIN, INPUT);
   pinMode(SENSOR2_PIN, INPUT);
@@ -172,17 +189,16 @@ void loop(){
   //oLedRed.Set( (timeNow % (iAnalog1*2)) < iAnalog1 );
   //oLedGreen.Set( (timeNow % (iAnalog2*2)) < iAnalog2 );
 
+  sensor.update();
 
   if (iTimeSend > timeNow) return;
   iTimeSend = timeNow + TIME_SEND;
 
   //robo using HOVER_SERIAL instead of DEBUG_SERIAL=ST-Link
-  for (int i=0; i<3; i++)
-  {
-    boolean bOn = aoHall[i].Get(); 
-    Serial2.print(bOn); 
-    Serial2.print("  ");
-  }
+  for (int i=0; i<3; i++)  {Serial2.print(aoHall[i].Get()); Serial2.print("  ");}
+
+  Serial2.print(sensor.getAngle());Serial2.print("  ");
+  Serial2.print(sensor.getVelocity());Serial2.print("  ");
 
   Serial2.print("A4: ");Serial2.print(iAnalog1);Serial2.print("\t C14: ");Serial2.println(iAnalog2);
 
