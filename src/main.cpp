@@ -1,3 +1,6 @@
+#define SERIAL0_RX                  PC15
+#define SERIAL0_TX                  PC15
+
 #include <Arduino.h>
 #include <Defines.h>
 #include <Config.h>
@@ -7,24 +10,28 @@
 // HallSensor(int hallA, int hallB , int hallC , int pp)
 //  - hallA, hallB, hallC    - HallSensor A, B and C pins
 //  - pp                     - pole pairs
-HallSensor sensor = HallSensor(PA1, PC15, PA10, 15);
+HallSensor sensor = HallSensor(PA1, PA9, PA10, 15);
 
+int aiHall[3];
 // Interrupt routine initialization
 // channel A and B callbacks
 void doA()
 {
   sensor.handleA();
-  Serial2.print("A");
+  aiHall[0]++;
+  //Serial2.print("A");
 }
 void doB()
 {
   sensor.handleB();
-  Serial2.print("B");
+  aiHall[1]++;
+  //Serial2.print("B");
 }
 void doC()
 {
   sensor.handleC();
-  Serial2.print("C");
+  aiHall[2]++;
+  //Serial2.print("C");
 }
 
 
@@ -82,7 +89,7 @@ CIO oLedGreen2 = CIO(LED2_PIN);
 
 CIO aoLed[5] = {oLedGreen, oLedGreen2, oLedRed, CIO(LED4_PIN), CIO(LED5_PIN) };
 
-CIO aoHall[3] = {CIO(PA1), CIO(PC15), CIO(PA10) };
+CIO aoHall[3] = {CIO(PA1), CIO(PA9), CIO(PA10) };
 
 
 // ########################## SETUP ##########################
@@ -160,8 +167,6 @@ void setup(){
 // ########################## LOOP ##########################
 
 unsigned long iTimeSend = 0;
-int iAnalog1 = 250;   // global variable for simple low-pass filter
-int iAnalog2 = 1000;  // global variable for simple low-pass filter
 
 #ifdef TEST
 int iTest = 0;
@@ -178,16 +183,10 @@ void loop(){
   // Delay
   unsigned long timeNow = millis();
 
-  iAnalog1 = analogRead(SENSOR1_PIN);
-  //delay(10);
-  //iAnalog2 = analogRead(SENSOR2_PIN);
-  digitalWrite(LED1_PIN, (timeNow % (iAnalog1*2)) < iAnalog1 );
-  //digitalWrite(LED2_PIN, (timeNow % (iAnalog2*2)) < iAnalog2 );
+  int iSensor1 = analogRead(SENSOR1_PIN);
+  boolean bSensor2 = digitalRead(SENSOR2_PIN);
+  digitalWrite(LED1_PIN, (timeNow % (iSensor1*2)) < iSensor1 );
   
-  //iAnalog1 = (9*iAnalog1 + analogRead(SENSOR1_PIN) ) / 10;
-  //iAnalog2 = (9*iAnalog2 + analogRead(SENSOR2_PIN) ) / 10;
-  //oLedRed.Set( (timeNow % (iAnalog1*2)) < iAnalog1 );
-  //oLedGreen.Set( (timeNow % (iAnalog2*2)) < iAnalog2 );
 
   sensor.update();
 
@@ -197,10 +196,12 @@ void loop(){
   //robo using HOVER_SERIAL instead of DEBUG_SERIAL=ST-Link
   for (int i=0; i<3; i++)  {Serial2.print(aoHall[i].Get()); Serial2.print("  ");}
 
-  Serial2.print(sensor.getAngle());Serial2.print("  ");
+ Serial2.print(" ints: ");for (int i=0; i<3; i++)  {Serial2.print(aiHall[i]); Serial2.print("   ");}
+
+  Serial2.print("angle: "); Serial2.print(sensor.getAngle());Serial2.print("  velocity: ");
   Serial2.print(sensor.getVelocity());Serial2.print("  ");
 
-  Serial2.print("A4: ");Serial2.print(iAnalog1);Serial2.print("\t C14: ");Serial2.println(iAnalog2);
+  Serial2.print("A4: ");Serial2.print(iSensor1);Serial2.print("\t C14: ");Serial2.println(bSensor2);
 
 
   #ifdef IMU
